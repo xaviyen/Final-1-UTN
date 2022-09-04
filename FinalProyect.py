@@ -35,8 +35,62 @@ def guardar_archivo():
     )
 
 
+# Función para pasar datos de la ventana secundaria al treeview de la principal
+# def ingreso_datos():
+# nonlocal var_nro_cliente, var_cliente, var_servicio, var_activo
+# global tree
+# pass
+
+
 def f_agregar_cliente():
-    pass
+    # Función para pasar datos de la ventana secundaria al treeview de la principal
+    def ingreso_datos():
+        nonlocal var_nro_cliente, var_cliente, var_servicio, var_activo
+        global tree
+        pass
+
+    # Variables para ingresar los datos
+    var_nro_cliente = StringVar()
+    var_cliente = StringVar()
+    var_servicio = StringVar()
+    var_activo = StringVar()
+
+    # Creación de la nueva ventana
+    nueva_ventana = Toplevel(root)
+    nueva_ventana.title("Agregar Cliente")
+    nueva_ventana.geometry("450x230")
+
+    # Ícono para la ventana secundaria
+    BASE_DIR = os.path.dirname((os.path.abspath(__file__)))
+    ruta = os.path.join(BASE_DIR, "img", "icono.png")
+    image_root = Image.open(ruta)
+    image_icon = ImageTk.PhotoImage(image_root)
+    nueva_ventana.iconphoto(False, image_icon)
+
+    # Labels, entry y botones de la nueva ventana
+    l_nro_cliente = Label(nueva_ventana, text="Ingresar número de cliente:")
+    l_nro_cliente.grid(row=0, column=0, padx=10, pady=10, sticky=E)
+    nro_cliente = Entry(nueva_ventana, textvariable=var_nro_cliente, width=40)
+    nro_cliente.grid(row=0, column=1, padx=10, pady=10)
+    l_cliente = Label(nueva_ventana, text="Ingresar cliente:")
+    l_cliente.grid(row=1, column=0, padx=10, pady=10, sticky=E)
+    cliente = Entry(nueva_ventana, textvariable=var_cliente, width=40)
+    cliente.grid(row=1, column=1, padx=10, pady=10)
+    l_servicio = Label(nueva_ventana, text="Ingresar servicio:")
+    l_servicio.grid(row=2, column=0, padx=10, pady=10, sticky=E)
+    servicio = Entry(nueva_ventana, textvariable=var_servicio, width=40)
+    servicio.grid(row=2, column=1, padx=10, pady=10)
+    l_activo = Label(nueva_ventana, text="Ingresar activo:")
+    l_activo.grid(row=3, column=0, padx=10, pady=10, sticky=E)
+    activo = Entry(nueva_ventana, textvariable=var_activo, width=40)
+    activo.grid(row=3, column=1, padx=10, pady=10)
+
+    b_aceptar_ingreso = Button(nueva_ventana, text="Aceptar", command=ingreso_datos)
+    b_aceptar_ingreso.grid(row=4, column=0)
+    b_cancelar_ingreso = Button(
+        nueva_ventana, text="Cancelar", command=nueva_ventana.destroy
+    )
+    b_cancelar_ingreso.grid(row=4, column=1)
 
 
 def f_alta():
