@@ -65,7 +65,7 @@ def f_exportar():
 
 root = Tk()
 # Ajuste de tamaño de la ventana
-root.geometry("700x500")
+root.geometry("750x500")
 # Título del proyecto
 root.title("Proyecto ISP")
 # Cambio de icono
@@ -100,40 +100,38 @@ root.config(menu=menubar)
 b_agregar_cliente = Button(
     root, text="Agregar cliente", command=f_agregar_cliente, width=15
 )
-b_agregar_cliente.grid(row=0, column=0, sticky=W, columnspan=3)
+b_agregar_cliente.grid(row=0, column=0, sticky=W, padx=20, pady=10)
 # grid_propagate expande las grillas en conjunto con la ventana principal
 b_agregar_cliente.grid_propagate(True)
 b_agregar_cliente.configure(border=3)
-b_agregar_cliente.rowconfigure(0, weight=100)
-b_agregar_cliente.columnconfigure(0, weight=50)
 # Botón alta
 b_alta = Button(root, text="Alta", command=f_alta, width=15)
-b_alta.grid(row=0, column=2, sticky=W)
+b_alta.grid(row=0, column=2, sticky=W, padx=20, pady=10)
 b_alta.grid_propagate(True)
 b_alta.configure(border=3)
 # Botón baja
 b_baja = Button(root, text="Baja", command=f_baja, width=15)
-b_baja.grid(row=0, column=3, sticky=W)
+b_baja.grid(row=0, column=3, sticky=W, padx=20, pady=10)
 b_baja.grid_propagate(True)
 b_baja.configure(border=3)
 # Botón servicios
 b_servicios = Button(root, text="Servicios", command=f_servicios, width=15)
-b_servicios.grid(row=1, column=0, sticky=W)
+b_servicios.grid(row=1, column=0, sticky=W, padx=20, pady=10)
 b_servicios.grid_propagate(True)
 b_servicios.configure(border=3)
 # Botón modificación
 b_modificacion = Button(root, text="Modificación", command=f_modificacion, width=15)
-b_modificacion.grid(row=1, column=2, sticky=W)
+b_modificacion.grid(row=1, column=2, sticky=W, padx=20, pady=10)
 b_modificacion.grid_propagate(True)
 b_modificacion.configure(border=3)
 # Botón consulta
 b_consulta = Button(root, text="Consulta", command=f_consulta, width=15)
-b_consulta.grid(row=1, column=3, sticky=W)
+b_consulta.grid(row=1, column=3, sticky=W, padx=20, pady=10)
 b_consulta.grid_propagate(True)
 b_consulta.configure(border=3)
 # Botón exportar
 b_exportar = Button(root, text="Export", command=f_exportar, width=15)
-b_exportar.grid(row=2, column=3, sticky=W)
+b_exportar.grid(row=2, column=3, sticky=W, padx=20, pady=10)
 b_exportar.grid_propagate(True)
 b_exportar.configure(border=3)
 
@@ -152,6 +150,6 @@ tree.heading("#0", text="N° de cliente")
 tree.heading("#1", text="Cliente")
 tree.heading("#2", text="Servicio")
 tree.heading("#3", text="Activo")
-tree.grid(row=3, column=0, columnspan=4)
+tree.grid(row=3, column=0, columnspan=4, padx=20, pady=10)
 
 root.mainloop()
