@@ -47,7 +47,14 @@ def f_agregar_cliente():
     def ingreso_datos():
         nonlocal var_nro_cliente, var_cliente, var_servicio, var_activo
         global tree
-        pass
+        nonlocal nueva_ventana
+        tree.insert(
+            "",
+            "end",
+            text=str(var_nro_cliente.get()),
+            values=(var_cliente.get(), var_servicio.get(), var_activo.get()),
+        )
+        nueva_ventana.destroy()
 
     # Variables para ingresar los datos
     var_nro_cliente = StringVar()
