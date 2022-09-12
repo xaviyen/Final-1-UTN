@@ -6,12 +6,36 @@ from tkinter import filedialog as fd
 from tkinter.messagebox import *
 import os
 import datetime
+import sqlite3
+import re
 
 mi_id = 0
 cursor_tree = {}
 #################
 # --Funciones-- #
 #################
+# Base de Datos
+def conexion():
+    ruta = os.path.dirname(os.path.abspath(__file__))
+    db = os.path.join(ruta, "isp.db")
+    con = sqlite3.connect(db)
+    return con
+
+
+def crear_tabla():
+    con = conexion()
+    cursor = con.cursor()
+    sql = "CREATE TABLE IF NOT EXISTS datos(id INTEGER PRIMARY KEY AUTOINCREMENT, cliente TEXT, email TEXT, telefono TEXT, plan TEXT, activo TEXT, fecha TEXT)"
+    cursor.execute(sql)
+    con.commit()
+
+
+try:
+    conexion()
+    crear_tabla()
+except:
+    print("Error.")
+
 # Función que abre diálogo para abrir archivos
 def abrir_archivo():
     tipo_archivo = (
@@ -38,6 +62,52 @@ def guardar_archivo():
     )
 
 
+# Funcion para guardar en base de datos
+def alta(cliente, email, telefono, plan, activo, fecha, tree):
+    cadena = telefono
+    patron = "[0-9]*$"
+    if (
+        re.match(patron, cadena)
+        and cursor_tree["Cliente: "] != ""
+        and cursor_tree["Email: "] != ""
+        and cursor_tree["Teléfono: "] != 0
+        and cursor_tree["Plan: "] != ""
+        and cursor_tree["Activo: "] != ""
+    ):
+        con = conexion()
+        cursor = con.cursor()
+        data = (cliente, email, telefono, plan, activo, fecha)
+        sql = "INSERT INTO datos(cliente, email, telefono, plan, activo, fecha) VALUES(?, ?, ?, ?, ?, ?)"
+        cursor.execute(sql, data)
+        con.commit()
+        actualizar_treeview(tree)
+    else:
+        print(
+            "Error en campos.",
+            "Se detectaron campos vacíos o erroneos, rellénelos correctamente para ingresar el cliente.",
+        )
+
+
+# Funcion para guardar en treeview lo mismo que se guarda en base de datos
+def actualizar_treeview(mi_tv):
+    records = mi_tv.get_children()
+    for element in records:
+        mi_tv.delete(element)
+    sql = "SELECT * FROM datos ORDER BY id ASC"
+    con = conexion()
+    cursor = con.cursor()
+    datos = cursor.execute(sql)
+    result = datos.fetchall()
+    for row in result:
+        print(row)
+        mi_tv.insert(
+            "",
+            0,
+            text=row[0],
+            values=(row[1], row[2], row[3], row[4], row[5], row[6]),
+        )
+
+
 # Ventana para agregar cliente
 def f_agregar_cliente():
     global cursor_tree, tree, mi_id
@@ -46,47 +116,41 @@ def f_agregar_cliente():
     def ingresar_datos_tree():
         global cursor_tree, tree, mi_id
         nonlocal nueva_ventana
+        cadena = var_telefono.get()
+        patron = "[0-9]*$"
         cursor_tree = {
             "Cliente: ": var_cliente.get(),
             "Email: ": var_email.get(),
             "Teléfono: ": var_telefono.get(),
             "Plan: ": var_plan.get(),
             "Activo: ": var_activo.get(),
+            "Fecha": fecha,
         }
+
         if (
-            cursor_tree["Cliente: "] != ""
+            re.match(patron, cadena)
+            and cursor_tree["Cliente: "] != ""
             and cursor_tree["Email: "] != ""
             and cursor_tree["Teléfono: "] != 0
             and cursor_tree["Plan: "] != ""
             and cursor_tree["Activo: "] != ""
         ):
-            tree.insert(
-                "",
-                "end",
-                text=str(mi_id),
-                values=(
-                    cursor_tree["Cliente: "],
-                    cursor_tree["Email: "],
-                    cursor_tree["Teléfono: "],
-                    cursor_tree["Plan: "],
-                    cursor_tree["Activo: "],
-                    datetime.date.today(),
-                ),
-            )
-            mi_id += 1
+            showinfo("Exito", "¡Sus datos se han guardado correctamente!")
             nueva_ventana.destroy()
         else:
             showerror(
-                "Rellenar campos de registro",
-                "Se detectaron campos vacíos, rellénelos para ingresar el cliente",
+                "Error en campos.",
+                "Se detectaron campos vacíos o erroneos, rellénelos correctamente para ingresar el cliente.",
             )
 
     # Declaración de variables
     var_cliente = StringVar()
     var_email = StringVar()
-    var_telefono = IntVar()
+    var_telefono = StringVar()
     var_plan = StringVar()
     var_activo = StringVar()
+    fecha = datetime.date.today()
+    fecha.strftime("%Y-%M-%D")
     global cursor_tree, mi_id
 
     # Creación de la nueva ventana
@@ -128,8 +192,22 @@ def f_agregar_cliente():
 
     # BUTTON
     b_aceptar_ingreso = Button(
-        nueva_ventana, text="Aceptar", command=ingresar_datos_tree
+        nueva_ventana,
+        text="Aceptar",
+        command=lambda: [
+            ingresar_datos_tree(),
+            alta(
+                var_cliente.get(),
+                var_email.get(),
+                var_telefono.get(),
+                var_plan.get(),
+                var_activo.get(),
+                fecha,
+                tree,
+            ),
+        ],
     )
+
     b_cancelar_ingreso = Button(
         nueva_ventana, text="Cancelar", command=nueva_ventana.destroy
     )
@@ -157,8 +235,13 @@ def f_modificacion():
     pass
 
 
-def f_consulta():
-    pass
+def f_consulta(tree):
+    try:
+        conexion()
+        crear_tabla()
+        actualizar_treeview(tree)
+    except:
+        print("Error.")
 
 
 def f_exportar():
@@ -204,7 +287,7 @@ b_agregar_cliente.grid(row=0, column=0, sticky=W, padx=20, pady=10)
 b_agregar_cliente.grid_propagate(True)
 b_agregar_cliente.configure(border=3)
 # Botón consulta
-b_consulta = Button(root, text="Consulta", command=f_consulta, width=15)
+b_consulta = Button(root, text="Consulta", command=lambda: f_consulta(tree), width=15)
 b_consulta.grid(row=0, column=1, sticky=W, padx=20, pady=10)
 b_consulta.grid_propagate(True)
 b_consulta.configure(border=3)
