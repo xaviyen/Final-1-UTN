@@ -10,6 +10,7 @@ import sqlite3
 import re
 
 mi_id = 0
+id_modificacion = 0
 cursor_tree = {}
 #################
 # --Funciones-- #
@@ -62,8 +63,14 @@ def guardar_archivo():
     )
 
 
+def limitador(entry_text):
+    if len(entry_text.get()) > 0:
+        # donde esta el :15 limitas la cantidad de caracteres
+        entry_text.set(entry_text.get()[:15])
+
+
 # Funcion para guardar en base de datos
-def alta(cliente, email, telefono, plan, activo, fecha, tree):
+def alta(texto, id_modif, cliente, email, telefono, plan, activo, fecha, tree):
     cadena = telefono
     patron = "[0-9]*$"
     if (
@@ -76,11 +83,19 @@ def alta(cliente, email, telefono, plan, activo, fecha, tree):
     ):
         con = conexion()
         cursor = con.cursor()
-        data = (cliente, email, telefono, plan, activo, fecha)
-        sql = "INSERT INTO datos(cliente, email, telefono, plan, activo, fecha) VALUES(?, ?, ?, ?, ?, ?)"
-        cursor.execute(sql, data)
-        con.commit()
-        actualizar_treeview(tree)
+        if texto == "Agregar":
+            data = (cliente, email, telefono, plan, activo, fecha)
+            sql = "INSERT INTO datos(cliente, email, telefono, plan, activo, fecha) VALUES(?, ?, ?, ?, ?, ?)"
+            cursor.execute(sql, data)
+            con.commit()
+            actualizar_treeview(tree)
+        elif texto == "Modificar":
+            data = (cliente, email, telefono, plan, activo, fecha, id_modif)
+
+            sql = "UPDATE datos SET cliente=?, email=?, telefono=?, plan=?, activo=?, fecha=? WHERE id = ?"
+            cursor.execute(sql, data)
+            con.commit()
+            actualizar_treeview(tree)
     else:
         print(
             "Error en campos.",
@@ -109,7 +124,7 @@ def actualizar_treeview(mi_tv):
 
 
 # Ventana para agregar cliente
-def f_agregar_cliente():
+def f_agregar_cliente(texto):
     global cursor_tree, tree, mi_id
 
     # Función que inserta los datos ingresados en el treeview principal
@@ -144,15 +159,25 @@ def f_agregar_cliente():
             )
 
     # Declaración de variables
-    var_cliente = StringVar()
-    var_email = StringVar()
-    var_telefono = StringVar()
-    var_plan = StringVar()
-    var_activo = StringVar()
-    fecha = datetime.date.today()
-    fecha.strftime("%Y-%M-%D")
-    global cursor_tree, mi_id
-
+    if texto == "Agregar":
+        var_cliente = StringVar()
+        var_email = StringVar()
+        var_telefono = StringVar()
+        var_plan = StringVar(value="Internet")
+        var_activo = StringVar(value="Si")
+        fecha = datetime.date.today()
+        fecha.strftime("%Y-%M-%D")
+        id_modificacion = mi_id  # Esta línea es para darle una asignación a la variable id_modificacion.
+    elif texto == "Modificar":
+        fila_selecionada = tree.item(tree.focus())
+        key, lista_seleccionada = list(fila_selecionada.items())[2]
+        var_cliente = StringVar(value=lista_seleccionada[0])
+        var_email = StringVar(value=lista_seleccionada[1])
+        var_telefono = StringVar(value=lista_seleccionada[2])
+        var_plan = StringVar(value=lista_seleccionada[3])
+        var_activo = StringVar(value=lista_seleccionada[4])
+        fecha = lista_seleccionada[5]
+        id_modificacion = list(fila_selecionada.values())[0]
     # Creación de la nueva ventana
     nueva_ventana = Toplevel(root)
     nueva_ventana.title("Agregar Cliente")
@@ -177,6 +202,7 @@ def f_agregar_cliente():
     cliente = Entry(nueva_ventana, textvariable=var_cliente, width=40)
     email = Entry(nueva_ventana, textvariable=var_email, width=40)
     tel = Entry(nueva_ventana, textvariable=var_telefono, width=40)
+    # tel..trace("w", lambda *args: limitador(entry_text))
 
     # COMBOBOX
     plan = ttk.Combobox(
@@ -197,6 +223,8 @@ def f_agregar_cliente():
         command=lambda: [
             ingresar_datos_tree(),
             alta(
+                texto,
+                id_modificacion,
                 var_cliente.get(),
                 var_email.get(),
                 var_telefono.get(),
@@ -228,17 +256,21 @@ def f_agregar_cliente():
 
 
 def f_baja():
-    pass
-
-
-def f_modificacion():
-    pass
+    global cursor_tree, tree
+    item = tree.item(tree.focus())
+    id_borrar = list(item.values())[0]
+    con = conexion()
+    cursor = con.cursor()
+    data = (id_borrar,)
+    sql = "DELETE FROM datos WHERE id = ?"
+    cursor.execute(sql, data)
+    con.commit()
+    actualizar_treeview(tree)
 
 
 def f_consulta(tree):
     try:
         conexion()
-        crear_tabla()
         actualizar_treeview(tree)
     except:
         print("Error.")
@@ -280,7 +312,7 @@ root.config(menu=menubar)
 ###############
 # Botón agregar cliente
 b_agregar_cliente = Button(
-    root, text="Agregar cliente", command=f_agregar_cliente, width=15
+    root, text="Agregar cliente", command=lambda: f_agregar_cliente("Agregar"), width=15
 )
 b_agregar_cliente.grid(row=0, column=0, sticky=W, padx=20, pady=10)
 # grid_propagate expande las grillas en conjunto con la ventana principal
@@ -292,7 +324,9 @@ b_consulta.grid(row=0, column=1, sticky=W, padx=20, pady=10)
 b_consulta.grid_propagate(True)
 b_consulta.configure(border=3)
 # Botón modificación
-b_modificacion = Button(root, text="Modificación", command=f_modificacion, width=15)
+b_modificacion = Button(
+    root, text="Modificación", command=lambda: f_agregar_cliente("Modificar"), width=15
+)
 b_modificacion.grid(row=0, column=2, sticky=W, padx=20, pady=10)
 b_modificacion.grid_propagate(True)
 b_modificacion.configure(border=3)
@@ -336,5 +370,4 @@ tree.heading("#4", text="Plan")
 tree.heading("#5", text="Activo")
 tree.heading("#6", text="Fecha de creación")
 tree.grid(row=3, column=0, columnspan=7, padx=20, pady=10)
-
 root.mainloop()
