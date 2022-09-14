@@ -202,7 +202,7 @@ def f_agregar_cliente(texto):
     cliente = Entry(nueva_ventana, textvariable=var_cliente, width=40)
     email = Entry(nueva_ventana, textvariable=var_email, width=40)
     tel = Entry(nueva_ventana, textvariable=var_telefono, width=40)
-    # tel..trace("w", lambda *args: limitador(entry_text))
+    var_telefono.trace_add("write", lambda *args: limitador(var_telefono))
 
     # COMBOBOX
     plan = ttk.Combobox(
