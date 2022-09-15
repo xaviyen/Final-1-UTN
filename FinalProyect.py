@@ -9,6 +9,9 @@ import datetime
 import sqlite3
 import re
 
+# 1° pip install xlsxwriter para poder manejar archivos de excel
+import xlsxwriter
+
 mi_id = 0
 id_modificacion = 0
 cursor_tree = {}
@@ -180,7 +183,10 @@ def f_agregar_cliente(texto):
         id_modificacion = list(fila_selecionada.values())[0]
     # Creación de la nueva ventana
     nueva_ventana = Toplevel(root)
-    nueva_ventana.title("Agregar Cliente")
+    if texto == "Agregar":
+        nueva_ventana.title("Agregar Cliente")
+    else:
+        nueva_ventana.title("Modificar Cliente")
     nueva_ventana.geometry("450x265")
     nueva_ventana.focus()
     nueva_ventana.grab_set()  # -->Para bloquear la ventana principal
@@ -277,7 +283,17 @@ def f_consulta(tree):
 
 
 def f_exportar():
-    pass
+    global tree
+    ruta = os.path.dirname(os.path.abspath(__file__))
+    arch_xlsx = os.path.join(ruta, "export_db.xlsx")
+    archivo = xlsxwriter.Workbook(arch_xlsx)
+    hoja = archivo.add_worksheet(name="nombre de hoja")
+    # Ejemplo: datos = [["Santiago", "Ramirez", "25"], ["Agustin", "Perez", "24"]]
+    # for j in range(len(datos)):
+    #    for i in range(len(datos[j])):
+    #        hoja.write(j, i, datos[j][i]) -->car
+
+    archivo.close()
 
 
 root = Tk()
