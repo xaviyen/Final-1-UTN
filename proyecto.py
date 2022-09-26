@@ -96,26 +96,27 @@ def guardar_archivo():
     nom_archivo_g = fd.asksaveasfilename(
         title="Guardar archivo", initialdir=ruta, filetypes=tipo_archivo
     )
-    arch_xlsx = os.path.join(ruta, nom_archivo_g + ".xlsx")
-    archivo = xlsxwriter.Workbook(arch_xlsx)
-    hoja = archivo.add_worksheet(name="Datoscliente")
-    sql = "SELECT * FROM datos ORDER BY id ASC"
-    con = conexion()
-    cursor = con.cursor()
-    datos = cursor.execute(sql)
-    result = datos.fetchall()
-    hoja.write(0, 0, "N° de cliente")
-    hoja.write(0, 1, "Cliente")
-    hoja.write(0, 2, "Email")
-    hoja.write(0, 3, "Teléfono")
-    hoja.write(0, 4, "Plan")
-    hoja.write(0, 5, "Activo")
-    hoja.write(0, 6, "Fecha de creación")
-    for row in range(len(result)):
-        for col in range(len(result[row])):
-            hoja.write(row + 1, col, result[row][col])
-    archivo.close()
-    showinfo("Exito", "Archivo Excel guardado correctamente")
+    if nom_archivo_g != "":
+        arch_xlsx = os.path.join(ruta, nom_archivo_g + ".xlsx")
+        archivo = xlsxwriter.Workbook(arch_xlsx)
+        hoja = archivo.add_worksheet(name="Datoscliente")
+        sql = "SELECT * FROM datos ORDER BY id ASC"
+        con = conexion()
+        cursor = con.cursor()
+        datos = cursor.execute(sql)
+        result = datos.fetchall()
+        hoja.write(0, 0, "N° de cliente")
+        hoja.write(0, 1, "Cliente")
+        hoja.write(0, 2, "Email")
+        hoja.write(0, 3, "Teléfono")
+        hoja.write(0, 4, "Plan")
+        hoja.write(0, 5, "Activo")
+        hoja.write(0, 6, "Fecha de creación")
+        for row in range(len(result)):
+            for col in range(len(result[row])):
+                hoja.write(row + 1, col, result[row][col])
+        archivo.close()
+        showinfo("Exito", "Archivo Excel guardado correctamente")
 
 
 # Función que actualiza el treeview
